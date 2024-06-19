@@ -2663,6 +2663,57 @@ function on_gui()
     end
   end
 
+  -- display special ready frames
+  -- special ready addresses for ken they're different for every char
+  -- base: 0x0202636B these are a negative offset:
+  -- 0 = QCB
+  -- -2 = QCF
+  -- -4 = DP
+  -- -16, 18, 20 = super
+  -- -30 = down down
+  -- -32 = another QCB but it isn't any of Ken's moves
+  if is_in_match then
+
+    local _x = 70 
+    local _y = 120
+    local mem_var = 0
+    local _idx = 0
+    local _special_ready_table = {}
+    local _row_padding = 8
+    local _gauge_height = 4
+    local _gauge_width = 25
+    local _gauge_background_color = 0xD6E7EF77
+    local _gauge_fill_color = 0xFF7939FF
+    local _ken_specials_name = {}
+    local _label_offset = 28
+    _ken_specials_name[1] = "QCB"
+    _ken_specials_name[2] = "QCF"
+    _ken_specials_name[3] = "DP"
+    _ken_specials_name[4] = "Super"
+    _ken_specials_name[7] = "DD"
+    for _i = -32,32,2
+    do
+      mem_var= memory.readbyte(0x0202636B - _i)
+      if mem_var ~= nil and mem_var ~= 255 then
+        _special_ready_table[_idx] = mem_var
+        _idx = _idx + 1
+      end
+    end
+    local _height_offset = 0
+    for _j = 0, _idx-1, 1
+    do
+      local _label = _ken_specials_name[_j]
+      if _label == nil then
+        _label = "skip"
+      end
+      if _label ~= "skip" then
+        gui.text(_x - _label_offset, _y + (_height_offset),  _label, text_default_color, text_default_border_color)
+        draw_gauge(_x, _y + (_height_offset), _gauge_width, _gauge_height, _special_ready_table[_j] / 11, _gauge_fill_color, _gauge_background_color, nil, true)
+        _height_offset = _height_offset + _row_padding
+      end
+    end
+  end
+
   -- Charge Meter Drawing
   if is_in_match and special_training_mode[training_settings.special_training_current_mode] == "charge" then
 
